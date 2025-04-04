@@ -9,10 +9,10 @@ IMAGE_DIR = r"C:\Users\tguev\Documents\Fing\Polytech\para2100"
 TRAIN_MODE = True  # Cambiar a False después de entrenar
 
 
-def extract_features(image):
+def extract_features(img):
     # Preprocesamiento
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
 
     # 1. Máscara de nieve (combinando HSV y LAB)
@@ -30,6 +30,7 @@ def extract_features(image):
     return [white_perc, hsv, cleaned_mask]
 
 def fuzzy_classifier(mean_h, cant_snow, std_h):
+    str = std_h/mean_h
     p1 = 0.5
     p2 = 0.5
     p3 = 0.5
@@ -47,16 +48,16 @@ def fuzzy_classifier(mean_h, cant_snow, std_h):
     else:
         p2 = 1
 
-    if std_h <= 0.1:
+    if str <= 0.1:
         p3 = 1
-    elif 0.1 < std_h < 0.5:
-        p3 = 1-((std_h - 0.1) / 0.4)
+    elif 0.1 < str < 0.6:
+        p3 = 1-((str - 0.1) / 0.4)
     else:
         p3 = 0
     if p3 == 0:
         return p2
     else:    # Definir la función de pertenencia difusa
-        fuzzy_membership = (p1*p3 + p2) / 2
+        fuzzy_membership = (p1 + p2) / 2
     return fuzzy_membership
 
 
@@ -72,7 +73,7 @@ def classify_snow(data):
 
 lib = os.listdir(IMAGE_DIR)
 result = []
-foto = r"C:\Users\tguev\Documents\Fing\Polytech\para2100\para2100__2019-03-10__16-00-00(1).JPG"
+foto = r"C:\Users\tguev\Documents\Fing\Polytech\para2100\para2100__2019-05-30__16-00-01(1).JPG"
 
 image = cv2.imread(foto)
 
@@ -89,8 +90,32 @@ else:
     print("Probabilité de neige: " + str(int(snow*100)) + "%")
     print("Cantité de neige: " + str(int(features[0]*100)) + "%")
 
-#plotear el histograma de h
+# mostrar los 3 canales r g b como histograma sobre el mismo grafico
+# rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+# r, g, b = cv2.split(rgb)
+# plt.hist(r.ravel(), 256, [0, 256], color='red', alpha=0.5)
+# plt.hist(g.ravel(), 256, [0, 256], color='green', alpha=0.5)
+# plt.hist(b.ravel(), 256, [0, 256], color='blue', alpha=0.5)
+# plt.title('Histogramas RGB')
+# plt.xlabel('Intensidad de píxel')
+# plt.ylabel('Número de píxeles')
+# plt.legend(['Rojo', 'Verde', 'Azul'])
+# plt.show()
+
+#plotear hsv
 h, s, v = cv2.split(features[1])
-plt.hist(h.ravel(), 256, [0, 256])
+plt.hist(h.ravel(), 256, [0, 256], color='red', alpha=0.5)
+plt.hist(s.ravel(), 256, [0, 256], color='green', alpha=0.5)
+plt.hist(v.ravel(), 256, [0, 256], color='blue', alpha=0.5)
+plt.title('Histogramas HSV')
+plt.xlabel('Intensidad de píxel')
+plt.ylabel('Número de píxeles')
+plt.legend(['H', 'S', 'V'])
 plt.show()
+
+
+# #plotear el histograma de h
+# h, s, v = cv2.split(features[1])
+# plt.hist(h.ravel(), 256, [0, 256])
+# plt.show()
 
