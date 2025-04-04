@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-
+from skimage.filters.rank import entropy
+from skimage.morphology import disk
 # Configuración inicial (ajustar con tus datos)
 
 IMAGE_DIR = r"C:\Users\tguev\Documents\Fing\Polytech\para2100"
@@ -13,6 +14,7 @@ def extract_features(img):
     # Preprocesamiento
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
     # 1. Máscara de nieve (combinando HSV y LAB)
@@ -27,7 +29,19 @@ def extract_features(img):
     # 3. Porcentaje inicial de píxeles blancos
     white_perc = np.sum(cleaned_mask == 255) / cleaned_mask.size
 
-    return [white_perc, hsv, cleaned_mask]
+    # 4. Entropía en áreas "no nieve"
+    non_snow = cv2.bitwise_not(cleaned_mask)
+    texture = entropy(gray, disk(5), mask=non_snow)
+    texture_mean = np.mean(texture) if np.any(non_snow) else 0
+
+    # 5. Densidad de bordes en áreas no cubiertas
+    edges = cv2.Canny(gray, 50, 150)
+    edge_density = np.mean(cv2.bitwise_and(edges, edges, mask=non_snow)) / 255.0
+
+    # 6. Medida de contraste local
+    blur = cv2.Laplacian(gray, cv2.CV_64F).var()
+
+    return [white_perc, hsv, cleaned_mask, edge_density]
 
 def fuzzy_classifier(mean_h, cant_snow, std_h):
     str = std_h/mean_h
@@ -69,6 +83,13 @@ def classify_snow(data):
 
     return fuzzy_classifier(mean_h, data[0], std_h)
 
+def detectObst(edge_density):
+    # Definir los límites para la detección de obstáculos
+    if edge_density > 0.01:
+        return True
+    else:
+        return False
+
 
 
 lib = os.listdir(IMAGE_DIR)
@@ -86,9 +107,14 @@ else:
         image = cv2.resize(image, (2688, 1512))
 
     features = extract_features(image)
-    snow = classify_snow(features)
-    print("Probabilité de neige: " + str(int(snow*100)) + "%")
-    print("Cantité de neige: " + str(int(features[0]*100)) + "%")
+    print(features[-1])
+    if detectObst(features[-1]):
+        snow = classify_snow(features)
+        print("Probabilité de neige: " + str(int(snow * 100)) + "%")
+        print("Cantité de neige: " + str(int(features[0] * 100)) + "%")
+    else:
+        print("obstrucción detectada")
+
 
 # mostrar los 3 canales r g b como histograma sobre el mismo grafico
 # rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -103,15 +129,15 @@ else:
 # plt.show()
 
 #plotear hsv
-h, s, v = cv2.split(features[1])
-plt.hist(h.ravel(), 256, [0, 256], color='red', alpha=0.5)
-plt.hist(s.ravel(), 256, [0, 256], color='green', alpha=0.5)
-plt.hist(v.ravel(), 256, [0, 256], color='blue', alpha=0.5)
-plt.title('Histogramas HSV')
-plt.xlabel('Intensidad de píxel')
-plt.ylabel('Número de píxeles')
-plt.legend(['H', 'S', 'V'])
-plt.show()
+# h, s, v = cv2.split(features[1])
+# plt.hist(h.ravel(), 256, [0, 256], color='red', alpha=0.5)
+# plt.hist(s.ravel(), 256, [0, 256], color='green', alpha=0.5)
+# plt.hist(v.ravel(), 256, [0, 256], color='blue', alpha=0.5)
+# plt.title('Histogramas HSV')
+# plt.xlabel('Intensidad de píxel')
+# plt.ylabel('Número de píxeles')
+# plt.legend(['H', 'S', 'V'])
+# plt.show()
 
 
 # #plotear el histograma de h
