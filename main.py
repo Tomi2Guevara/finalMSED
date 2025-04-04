@@ -60,13 +60,13 @@ def fuzzy_classifier(mean_h, cant_snow, std_h):
     return fuzzy_membership
 
 
-def classify_snow(features):
+def classify_snow(data):
     #claclar la media y desviación estándar de la h de la columan 1 de features
-    mean_h = np.mean(features[1][:, :, 0])
-    std_h = np.std(features[1][:, :, 0])
+    mean_h = np.mean(data[1][:, :, 0])
+    std_h = np.std(data[1][:, :, 0])
     # Aplicar el clasificador difuso
 
-    return fuzzy_classifier(mean_h, features[0], std_h)
+    return fuzzy_classifier(mean_h, data[0], std_h)
 
 
 
