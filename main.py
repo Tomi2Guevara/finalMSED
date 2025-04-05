@@ -89,9 +89,10 @@ def detectObst(edge_density):
 
 
 
+
 lib = os.listdir(IMAGE_DIR)
 result = []
-foto = r"C:\Users\tguev\Documents\Fing\Polytech\para2100\para2100__2019-05-30__16-00-01(1).JPG"
+foto = r"C:\Users\tguev\Documents\Fing\Polytech\para2100\para2100__2019-03-10__16-00-00(1).JPG"
 
 image = cv2.imread(foto)
 
@@ -104,41 +105,12 @@ else:
         image = cv2.resize(image, (2688, 1512))
 
     features = extract_features(image)
-    print(features[-1])
-    if detectObst(features[-1]):
-        snow = classify_snow(features)
-        print("Probabilité de neige: " + str(int(snow * 100)) + "%")
-        print("Cantité de neige: " + str(int(features[0] * 100)) + "%")
-    else:
-        print("obstrucción detectada")
+    snow = classify_snow(features)
+    print("Probabilité de neige: " + str(int(snow*100)) + "%")
+    print("Cantité de neige: " + str(int(features[0]*100)) + "%")
 
-
-# mostrar los 3 canales r g b como histograma sobre el mismo grafico
-# rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-# r, g, b = cv2.split(rgb)
-# plt.hist(r.ravel(), 256, [0, 256], color='red', alpha=0.5)
-# plt.hist(g.ravel(), 256, [0, 256], color='green', alpha=0.5)
-# plt.hist(b.ravel(), 256, [0, 256], color='blue', alpha=0.5)
-# plt.title('Histogramas RGB')
-# plt.xlabel('Intensidad de píxel')
-# plt.ylabel('Número de píxeles')
-# plt.legend(['Rojo', 'Verde', 'Azul'])
-# plt.show()
-
-#plotear hsv
-# h, s, v = cv2.split(features[1])
-# plt.hist(h.ravel(), 256, [0, 256], color='red', alpha=0.5)
-# plt.hist(s.ravel(), 256, [0, 256], color='green', alpha=0.5)
-# plt.hist(v.ravel(), 256, [0, 256], color='blue', alpha=0.5)
-# plt.title('Histogramas HSV')
-# plt.xlabel('Intensidad de píxel')
-# plt.ylabel('Número de píxeles')
-# plt.legend(['H', 'S', 'V'])
-# plt.show()
-
-
-# #plotear el histograma de h
-# h, s, v = cv2.split(features[1])
-# plt.hist(h.ravel(), 256, [0, 256])
-# plt.show()
+#plotear el histograma de h
+h, s, v = cv2.split(features[1])
+plt.hist(h.ravel(), 256, [0, 256])
+plt.show()
 
