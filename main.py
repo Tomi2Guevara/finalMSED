@@ -89,7 +89,6 @@ def detectObst(edge_density):
 
 
 
-
 lib = os.listdir(IMAGE_DIR)
 result = []
 foto = r"C:\Users\tguev\Documents\Fing\Polytech\para2100\para2100__2019-03-10__16-00-00(1).JPG"
