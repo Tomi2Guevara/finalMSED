@@ -38,9 +38,6 @@ def extract_features(img):
     edges = cv2.Canny(gray, 50, 150)
     edge_density = np.mean(cv2.bitwise_and(edges, edges, mask=non_snow)) / 255.0
 
-    # 6. Medida de contraste local
-    blur = cv2.Laplacian(gray, cv2.CV_64F).var()
-
     return [white_perc, hsv, cleaned_mask, edge_density]
 
 def fuzzy_classifier(mean_h, cant_snow, std_h):
@@ -62,16 +59,16 @@ def fuzzy_classifier(mean_h, cant_snow, std_h):
     else:
         p2 = 1
 
-    if str <= 0.1:
+    if str <= 0.3:
         p3 = 1
-    elif 0.1 < str < 0.6:
+    elif 0.3 < str < 0.6:
         p3 = 1-((str - 0.1) / 0.4)
     else:
         p3 = 0
     if p3 == 0:
         return p2
     else:    # Definir la función de pertenencia difusa
-        fuzzy_membership = (p1 + p2) / 2
+        fuzzy_membership = (p1*p3 + p2) / 2
     return fuzzy_membership
 
 
